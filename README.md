@@ -1,19 +1,39 @@
-# Sync Cart — redesigned website
+# Sync Cart — Holographic Future redesign
 
-This is a responsive, dark navy + emerald redesign for the existing Sync Cart prototype. It includes a landing page, product catalogue/search, cart, demo checkout, exit QR, customer verification page, and separate staff-only camera/verification pages.
+A responsive dark navy/cyan/emerald-inspired FastAPI UI for the Sync Cart prototype. It includes:
 
-## Files
-- `app.py` — redesigned FastAPI app and UI.
-- `requirements.txt` — Python packages.
-- `render.yaml` — optional Render build/start configuration.
+- Futuristic landing page and responsive customer shopping UI
+- Product search, product QR scanning, add/remove cart quantities
+- Demo checkout and signed exit QR flow
+- Customer-facing verification result
+- Budget meter (example budget ₹1,000)
+- Illustrative aisle route (update aisle mapping for your real store)
+- Browser-local checkout history page at `/profile`
+- Staff-only dashboard, exit gate scanner, and printable QR labels
+- Existing customer and agent API routes retained
 
-## Important
-1. Keep your existing `core.py` in the same repository folder. This app imports `PickTracker` and `Store` from it.
-2. The checkout is a **demo only**. It does not connect to UPI, cards, or a payment provider and does not charge money.
-3. Camera-based physical-item tracking only works when a compatible local YOLO model/camera agent is connected. The UI does not show live tracking to customers.
-4. Set `SYNCCART_MODE=server` for a public Render deployment where your local camera agent sends data. Use `SYNCCART_MOCK=1` only for testing without a camera.
-5. Set `SYNCCART_CODES` in Render as JSON if you want product QR IDs mapped to product names, for example `{"CHOC001":"Chocolate","NOTE001":"Notebook","BOTTLE001":"Bottle"}`. Keep product names consistent with the product names your backend exposes.
-6. Set a strong `SYNCCART_PIN` for staff pages and rotate any previously exposed credentials. Do not commit API keys or PINs to GitHub.
+## Important before deploying
 
-## GitHub / Render update
-Back up the current `app.py`, replace it with this `app.py`, keep `core.py` and your existing camera-agent files, then commit and push. Render will redeploy from the repository. Test `/`, `/shop`, `/checkout`, `/exit`, and the staff pages after deployment.
+1. **Keep your existing `core.py`** in the same repository directory. The app imports `PickTracker` and `Store` from it. Keep your existing camera-agent files too.
+2. This ZIP intentionally does not replace `core.py`; back up your repository before replacing `app.py`.
+3. Checkout is **demo only**. It does not charge money or connect to UPI, cards, or a payment provider.
+4. The aisle route uses example aisle labels; it is not live indoor navigation. Edit the `aisle` map in the SHOP page JavaScript to match your store.
+5. `/profile` stores demo history in the browser's `localStorage` only. It is not server-backed account history and may not appear on another device/browser.
+6. On Render, `SYNCCART_MODE=server` means camera inference is not running on Render; the local `agent.py` must send frames/events if you want real physical-item records. `SYNCCART_MOCK=1` is for website testing only.
+7. Set a strong `SYNCCART_PIN` and `SYNCCART_KEY` in Render Environment settings. Do not put secrets in GitHub. If prior values were exposed, rotate them.
+8. Product QR codes are mapped by `SYNCCART_CODES`, e.g. `{"CHOC001":"Chocolate","NOTE001":"Notebook","BOTTLE001":"Bottle"}`. Product names must match backend product names.
+
+## Local run
+
+```bash
+pip install -r requirements.txt
+uvicorn app:app --reload
+```
+
+You must have the existing `core.py` beside `app.py`.
+
+## Routes retained
+
+Customer: `/`, `/shop`, `/checkout`, `/exit`, `/profile`
+Staff: `/staff?pin=...`, `/gate?pin=...`, `/labels?pin=...`
+API: `/api/products`, `/api/login`, `/api/scan/{sid}`, `/api/scan_code/{sid}`, `/api/pay/{sid}`, `/api/state/{sid}`, `/api/verify/{sid}`, `/api/exit_scan`, `/api/active`, `/api/qr`, `/frame.jpg`, `/api/agent/products`, `/api/agent/frame`, `/api/agent/event`, `/api/sim/{sid}`
